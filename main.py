@@ -223,15 +223,13 @@ class FirstPersonController(Entity):
         dt=time.dt
         if (self.last_called==-1):
             self.last_called=0
-            #dt=0
             window_x,window_y=base.win.properties.getXOrigin(),base.win.properties.getYOrigin()
             window_w,window_h=base.win.properties.getXSize(),base.win.properties.getYSize()
             center_x=window_x+window_w//2
             center_y=window_y+window_h//2
             cursor.move(center_x,center_y,absolute=True,duration=0)
+            
         global paused
-        
-        
         if (paused):
             return
         #Process camera rotation
@@ -257,6 +255,7 @@ class FirstPersonController(Entity):
         
         x,y,z=self.position
         dx,dy,dz=0.0,0.0,0.0
+        
         if not(self.flying):
             if (held_keys['shift']>0):
                 self.sprinting=False
@@ -269,9 +268,7 @@ class FirstPersonController(Entity):
                 self.speed=SPRINTING_SPEED
                 self._cp=PLAYER_CAMERA_POSITION*PLAYER_HEIGHT
             else:
-                self.sprinting=False
                 self.crouching=False
-                self.speed=WALKING_SPEED
                 self._cp=PLAYER_CAMERA_POSITION*PLAYER_HEIGHT
         else:
             self.speed=FLYING_SPEED
@@ -305,7 +302,7 @@ class FirstPersonController(Entity):
                 self.dy=max(self.dy,-TERMINAL_VELOCITY)
                 dy+=self.dy*dt
                 detected=False
-                i=y
+                i=ceil(y)
                 while (i>=floor(y+dy)):
                     for j in range(12):
                         if (collide(normalize((x+vx[j],i,z+vz[j])))):
@@ -413,6 +410,11 @@ class FirstPersonController(Entity):
                 wont_fall=True
         if (detected or (self.crouching and (not wont_fall))):
             dz=0
+        
+        if (dx==0) and (dz==0):
+            if (self.sprinting):
+                self.speed=WALKING_SPEED
+            self.sprinting=False
         if (held_keys['c']>0):
             if (self.__fov==-1):
                 self.__fov=camera.fov
